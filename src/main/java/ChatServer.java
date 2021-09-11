@@ -121,7 +121,5 @@ public class ChatServer {
             writer.print(message);
             writer.flush();
         }
-
-        //Check type
     }
 }

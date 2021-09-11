@@ -106,8 +106,8 @@ public class PoolServer{
         }
     }
 
-    //chat connection
-    private class ChatConnection implements Runnable{
+    //chat connection - each connection is a seperate threads to hold the connection
+    private class ChatConnection extends Thread{
         private Socket socket;
         private BufferedReader reader;
         private PrintWriter writer;
@@ -159,6 +159,15 @@ public class PoolServer{
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    //this is creation of one task
+    private class Task implements Runnable{
+        public Task createTask(Object jsonObj){
+            /////
+            return null;
+        }
+
     }
 
 
