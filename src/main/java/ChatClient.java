@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -18,6 +19,16 @@ public class ChatClient {
     private BufferedReader stdreader;
 
     private String want;
+    private boolean requestRoom = false;
+
+    public boolean isRequestRoom() {
+        return requestRoom;
+    }
+
+    public void setRequestRoom(boolean requestRoom) {
+        this.requestRoom = requestRoom;
+    }
+
 
     public void setWant(String want) {
         this.want = want;
@@ -93,9 +104,9 @@ public class ChatClient {
 
         private void handleReply(Map<String, Object> in){
             Object command = in.get("type");
-            Object identity, former, roomid, content,identities, owner;
-            String want;
+            Object identity, former, roomid, identities, owner;
             List<String> l;
+            boolean request;
             if (command.equals("newidentity")){
                 former = in.get("former");
                 identity = in.get("identity");
@@ -109,42 +120,69 @@ public class ChatClient {
             }else if (command.equals("roomchange")){
                 identity = in.get("identity");
                 former = in.get("former");
-                roomid = in.get("roomid");
                 if (former==null){
-                    System.out.printf("%s move to %s\n", roomid);
+                    System.out.printf("%s move to %s\n", in.get("roomid"));
                 }else if (identity.equals(former)){
                     System.out.println("The reguested room is invalid or non existent");
                 }else{
-                    System.out.printf("%s move from %s to %s\n",identity, former, roomid);
+                    System.out.printf("%s move from %s to %s\n",identity, former, in.get("roomid"));
                 }
             }else if (command.equals("roomlist")){
                 want = getWant();
-                //how to convert the room???
+                request = isRequestRoom();
+                if (request){
+
+                }else{
+                    printContents(in.get("rooms"));
+                }
             }else if (command.equals("message")){
-                identity = in.get("identity");
-                content = in.get("content");
-                System.out.printf("%s: %s\n",identity, content);
+                System.out.printf("%s: %s\n",in.get("identity"), in.get("content"));
             }else if (command.equals("roomcontents")){
                 identities = in.get("identities");
-                roomid = in.get("roomid");
                 owner = in.get("owner");
                 if (identities instanceof List){
                     l  = (List<String>) identities;
                     if(owner.equals("")){
-                        System.out.printf("%s contains %s\n",roomid, String.join(" ", l));
+                        System.out.printf("%s contains %s\n",in.get("roomid"), String.join(" ", l));
                     }else{
-                        System.out.printf("%s contains %s %s*\n",roomid, String.join(" ", l), owner);
+                        System.out.printf("%s contains %s %s*\n",in.get("roomid"), String.join(" ", l), owner);
                     }
                 }
             }
         }
 
-        private Map<String, Integer> printContents(Object list){
-            if (list instanceof List){
-                list = (List<Object>) list;
-                //.....
+        private void printContents(Object list){
+            if (list instanceof List) {
+                List<Object> n = (List<Object>) list;
+                for (Object s : n) {
+                    if (s instanceof Map) {
+                        System.out.printf("%s: %s guests\n", ((Map) s).get("roomid"), ((Map) s).get("count"));
+                    }
+                }
             }
-            return null;
+        }
+
+        private void printCreate(Object list){
+            String want = getWant();
+            List<String> have = new ArrayList<>();
+            String each;
+            if (list instanceof List) {
+                List<Object> n = (List<Object>) list;
+                for (Object s : n) {
+                    if (s instanceof Map) {
+                        each = (String)((Map) s).get("roomid");
+                        have.add(each);
+                    }
+                }
+            }
+            if(have.contains(want)){
+                System.out.printf("Rooms %s created\n", want);
+            }else{
+                System.out.printf("Rooms %s is invalid or already in use.\n", want);
+                setRequestRoom(false);
+                setWant(null);
+            }
+
         }
 
         @Override
@@ -198,6 +236,7 @@ public class ChatClient {
                 rsp = String.format("{\"type\": %s\n}", command);
             }else if (command.equals("createroom")){
                 setWant(inps[1]);
+                setRequestRoom(true);
                 rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("delete")){
                 rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
