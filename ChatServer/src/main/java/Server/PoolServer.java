@@ -13,8 +13,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class PoolServer{
     private boolean alive = false;
     public static final int PORT = 4444;
-    private ThreadPool threadPool;
-    private int nThreads;
+//    private ThreadPool threadPool;
+    private PoolHandler poolHandler;
+//    private int nThreads;
 //    private final List<PoolServer.ThreadWorker> threads;
 //    private final BlockingQueue<Runnable> taskQueue;
 //    private List<PoolServer.ChatConnection> connectionList = new ArrayList<>();
@@ -29,14 +30,19 @@ public class PoolServer{
 //    //this to store all the interger are occupied from users
 //    private List<Integer> id;
 
-    public PoolServer(int nThreads) {
-        this.nThreads = nThreads;
-        this.threadPool = new ThreadPool(nThreads);
+    public PoolServer() {
+//        this.nThreads = nThreads;
+//        this.threadPool = new ThreadPool(nThreads);
+        this.poolHandler = new PoolHandler(2);
     }
 
     //main functions
     public static void main(String[] args) {
-        PoolServer poolServer = new PoolServer(10);
+        PoolServer poolServer = new PoolServer();
+        // run the pool handler on separate thread
+        Thread t = new Thread(poolServer.poolHandler);
+        t.start();
+
         poolServer.handle();
     }
 
@@ -80,13 +86,20 @@ public class PoolServer{
             System.out.printf("listening on port %d\n", PORT);
             alive = true;
             while (alive) {
+                // wait until a new client connects (.accept is a blocking method)
                 Socket socket = serverSocket.accept();
-                ConnectionTask connTask = new ConnectionTask(socket);
-                threadPool.execute(connTask);
+                System.out.printf("New connection established! Adding to pool handler open sockets\n");
+                if (socket != null) {
+                    SocketConnection socketConnection = new SocketConnection(socket);
+                    poolHandler.addToOpenSockets(socketConnection);
+                }
+//                openSockets.add(socket);
+
+//                ConnectionTask connTask = new ConnectionTask(socket);
+//                threadPool.execute(connTask);
 //                ChatConnection connection = new ChatConnection(socket);
 //                join(connection);
 //                connection.run(); //?????
-
             }
         } catch (IOException e) {
             e.printStackTrace();

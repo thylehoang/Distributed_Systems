@@ -20,33 +20,47 @@ public class ConnectionTask implements Runnable{
         this.writer = new PrintWriter(socket.getOutputStream());
     }
 
+//    @Override
+//    public void run() {
+//        System.out.printf("Connection run called\n");
+//        connectionAlive = true;
+//        while (connectionAlive) {
+//            try {
+//                String in = reader.readLine();
+//                if (in != null) {
+//                    //unmarshall the json
+//                    //based on type, call the
+////                        broadcast(String.format("%d: %s\n", socket.getPort(), in));
+//                    System.out.printf("[%s] %d: %s\n",
+//                            Thread.currentThread().getName(), socket.getPort(), in);
+//                } else {
+//                    connectionAlive = false;
+//                }
+//            } catch (IOException e) {
+//                connectionAlive = false;
+//                e.printStackTrace();
+//            }
+//        }
+//        System.out.printf("Connection closed\n");
+//        close();
+//    }
+
     @Override
     public void run() {
-        System.out.printf("Connection run called\n");
-        connectionAlive = true;
-        while (connectionAlive) {
-            try {
-                String in = reader.readLine();
-                if (in != null) {
-                    //unmarshall the json
-                    //based on type, call the
-//                        broadcast(String.format("%d: %s\n", socket.getPort(), in));
-                    System.out.printf("%d: %s\n", socket.getPort(), in);
-                } else {
-                    connectionAlive = false;
-                }
-            } catch (IOException e) {
-                connectionAlive = false;
-                e.printStackTrace();
+        try {
+            String in = reader.readLine();
+            if (in != null) {
+                System.out.printf("[%s] %d: %s\n",
+                        Thread.currentThread().getName(), socket.getPort(), in);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.printf("Connection closed\n");
-        close();
+//        close();
     }
 
     public void close() {
         try {
-            socket.close();
             reader.close();
             writer.close();
         } catch (IOException e) {
