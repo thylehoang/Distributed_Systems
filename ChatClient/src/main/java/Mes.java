@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class Mes extends Task {
     private String content;
     public Mes(String content) {

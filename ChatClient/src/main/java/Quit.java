@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class Quit extends Task {
     @Override
     public void run() {

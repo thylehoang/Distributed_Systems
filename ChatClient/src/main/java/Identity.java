@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class Identity extends Task {
     public Identity(String former, String identity) {
         super();

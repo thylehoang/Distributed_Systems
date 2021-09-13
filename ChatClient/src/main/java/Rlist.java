@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class Rlist extends Task {
 
     private String roomID;

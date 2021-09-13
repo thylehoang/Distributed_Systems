@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class RChange extends Task {
     private String former;
     private String identity;

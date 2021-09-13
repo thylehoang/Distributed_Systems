@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class RDel extends Task {
     private String roomID;
     public RDel(String roomID) {

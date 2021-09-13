@@ -1,3 +1,5 @@
+import Server.Task;
+
 public class RContent extends Task {
     private String identity;
     private String roomID;

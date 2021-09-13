@@ -11,10 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChatClient {
-    private static final int PORT = 6379;
+    private static final int PORT = 4444;
     private boolean alive = false;
     private Socket clientSocket;
-    private BufferedWriter writer;
+    private PrintWriter writer;
     private BufferedReader reader;
     private BufferedReader stdreader;
 
@@ -46,8 +46,9 @@ public class ChatClient {
     private void connect() {
         //Socket clientSocket;
         try {
+            // TODO: replace address here
             clientSocket = new Socket(InetAddress.getLocalHost(),PORT);
-            this.writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
+            this.writer = new PrintWriter(clientSocket.getOutputStream());
             this.reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.stdreader = new BufferedReader(new InputStreamReader(System.in));
             System.out.println("Connected to the chat server");
@@ -72,13 +73,13 @@ public class ChatClient {
     }
 
     public void sendMessage(String message) {
-        try {
-            writer.write(message);
+//        try {
+            writer.print(message);
             writer.flush();
-        } catch (IOException e) {
-            alive = false;
-            e.printStackTrace();
-        }
+//        } catch (IOException e) {
+//            alive = false;
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -88,14 +89,14 @@ public class ChatClient {
         private BufferedReader reader;
         private boolean connectionAlive = false;
         private Gson gson;
-        private BufferedWriter writer;
+        private PrintWriter writer;
 
 
         private List<String> owner_rooms;
         private String identity;
         private String currentroom;
 
-        public Connection(Socket socket, BufferedWriter writer, BufferedReader reader) throws IOException {
+        public Connection(Socket socket, PrintWriter writer, BufferedReader reader) throws IOException {
             this.socket = socket;
             this.gson = new Gson();
             this.reader = reader;
@@ -213,11 +214,11 @@ public class ChatClient {
     private class Handler extends Thread {
         private BufferedReader reader;
         private Gson gson;
-        private BufferedWriter writer;
+        private PrintWriter writer;
         private boolean connectionAlive=false;
         private Socket socket;
 
-        public Handler(Socket socket, BufferedWriter writer, BufferedReader reader) throws IOException {
+        public Handler(Socket socket, PrintWriter writer, BufferedReader reader) throws IOException {
             this.gson = new Gson();
             this.reader = reader;
             this.writer = writer;
@@ -249,15 +250,19 @@ public class ChatClient {
         }
 
         private void handleInput(String inp){
-            Pattern pattern = Pattern.compile("#[a-zA-Z]\\s[a-zA-Z]+");
-            Matcher match = pattern.matcher(inp);
-            boolean command = match.matches();
-            if (command) {
-                inp = inp.substring(1);
-            }
-            String[] spls = inp.split("\\s+");
-            JsonObject rsp = handleRequest(spls);
-            sendMessage(rsp.toString());
+//            Pattern pattern = Pattern.compile("#[a-zA-Z]\\s[a-zA-Z]+");
+//            Matcher match = pattern.matcher(inp);
+//            boolean command = match.matches();
+//            if (command) {
+//                inp = inp.substring(1);
+//            }
+//            String[] spls = inp.split("\\s+");
+//            JsonObject rsp = handleRequest(spls);
+//            sendMessage(rsp.toString());
+            System.out.printf("Sending message '%s' to server\n", inp);
+//            sendMessage(inp);
+            writer.println(inp);
+            writer.flush();
         }
 
         @Override

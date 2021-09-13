@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,8 +14,8 @@ import java.util.List;
 // support leaving/joining without causing an exception
 public class ChatServer {
     private boolean alive = false;
-    public static final int PORT = 6379;
-    private List<ChatConnection> connectionList = new ArrayList<>();
+    public static final int PORT = 4444;
+//    private List<ChatConnection> connectionList = new ArrayList<>();
     //need dictionary of rooms
 
 
@@ -24,29 +26,29 @@ public class ChatServer {
     }
 
     //leave the chat
-    private void leave(ChatConnection conn) {
-        synchronized (connectionList) {
-            connectionList.remove(conn);
-        }
-        broadcast(String.format("%d has left the chat\n", conn.socket.getPort()));
-    }
-
-    //join the chat
-    private void join(ChatConnection conn) {
-        synchronized (connectionList) {
-            connectionList.add(conn);
-        }
-        broadcast(String.format("%d has joined the chat\n", conn.socket.getPort()));
-    }
-
-    //broadcast the message
-    private void broadcast(String message) {
-        synchronized (connectionList) {
-            for (ChatConnection c : connectionList) {
-                    c.sendMessage(message);
-            }
-        }
-    }
+//    private void leave(ChatConnection conn) {
+//        synchronized (connectionList) {
+//            connectionList.remove(conn);
+//        }
+//        broadcast(String.format("%d has left the chat\n", conn.socket.getPort()));
+//    }
+//
+//    //join the chat
+//    private void join(ChatConnection conn) {
+//        synchronized (connectionList) {
+//            connectionList.add(conn);
+//        }
+//        broadcast(String.format("%d has joined the chat\n", conn.socket.getPort()));
+//    }
+//
+//    //broadcast the message
+//    private void broadcast(String message) {
+//        synchronized (connectionList) {
+//            for (ChatConnection c : connectionList) {
+//                    c.sendMessage(message);
+//            }
+//        }
+//    }
 
     //create newidentity
 
@@ -60,13 +62,20 @@ public class ChatServer {
             alive = true;
             while (alive) {
                 Socket socket = serverSocket.accept();
-                // do some stuff here with socket
                 ChatConnection connection = new ChatConnection(socket);
                 connection.start();
-                join(connection);
+                if (connection != null) {
+                    System.out.printf("Accepted new connection from %s:%d\n", socket.getLocalAddress().getCanonicalHostName(), socket.getPort());
+                    connection.run();
+                }
+//                join(connection);
+                else {
+                    alive = false;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
+            alive = false;
         }
     }
 
@@ -88,27 +97,31 @@ public class ChatServer {
 
         @Override
         public void run() {
+            System.out.printf("Connection run called\n");
             connectionAlive = true;
             while (connectionAlive) {
                 try {
-                    String in  = reader.readLine();
+                    String in = reader.readLine();
                     if (in != null) {
                         //unmarshall the json
                         //based on type, call the
-                        broadcast(String.format("%d: %s\n", socket.getPort(), in));
+//                        broadcast(String.format("%d: %s\n", socket.getPort(), in));
+                        System.out.printf("%d: %s\n", socket.getPort(), in);
                     } else {
                         connectionAlive = false;
                     }
                 } catch (IOException e) {
                     connectionAlive = false;
+                    e.printStackTrace();
                 }
             }
+            System.out.printf("Connection closed\n");
             close();
         }
 
         public void close() {
             try {
-                leave(this);
+//                leave(this);
                 socket.close();
                 reader.close();
                 writer.close();
