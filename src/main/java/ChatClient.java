@@ -228,29 +228,36 @@ public class ChatClient {
             String command = inps[0];
             //String rsp;
             HashMap<String, String> rsp = new HashMap<>();
-            rsp.put("type", command);
             if (command.equals("newidentity")){
+                rsp.put("type", command);
                 rsp.put("identity", inps[1]);
                 //rsp = String.format("{\"type\": %s,\n \"identity\": %s\n}", command, inps[1]);
             }else if (command.equals("join")){
+                rsp.put("type", command);
                 rsp.put("roomid", inps[1]);
                 //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("who")){
+                rsp.put("type", command);
                 rsp.put("roomid", inps[1]);
                 //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("list")){
+                rsp.put("type", command);
                 //rsp = String.format("{\"type\": %s\n}", command);
             }else if (command.equals("createroom")){
                 setWant(inps[1]);
                 setRequestRoom(true);
+                rsp.put("type", command);
                 rsp.put("roomid", inps[1]);
                 //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("delete")){
+                rsp.put("type", command);
                 rsp.put("roomid", inps[1]);
                 //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("quit")){
+                rsp.put("type", command);
                 //rsp = String.format("{\"type\": %s\n}", command);
             }else{
+                rsp.put("type", "message");
                 rsp.put("content", inps[1]);
                 //rsp = String.format("{\"type\": message,\n \"content\": %s\n}", command);
             }
