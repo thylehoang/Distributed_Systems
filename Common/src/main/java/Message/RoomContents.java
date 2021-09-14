@@ -1,14 +1,16 @@
 package Message;
 
+import java.util.ArrayList;
+
 public class RoomContents {
     private String type = "roomcontents";
     private String roomId;
-
-    // TODO: figure out how to do identities list
     private String owner;
+    private ArrayList<String> identities;
 
-    public RoomContents(String roomId, String owner) {
+    public RoomContents(String roomId, String owner, ArrayList<String> identities) {
         this.roomId = roomId;
         this.owner = owner;
+        this.identities = identities;
     }
 }

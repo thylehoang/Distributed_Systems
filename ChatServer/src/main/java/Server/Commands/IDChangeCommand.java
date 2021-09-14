@@ -3,7 +3,10 @@ package Server.Commands;
 import Message.IdentityChange;
 import Server.ClientMeta;
 import Server.PoolServer;
+import Server.Room;
 import com.google.gson.Gson;
+
+import java.util.HashSet;
 
 public class IDChangeCommand extends Command{
     private PoolServer poolServer;
@@ -23,17 +26,21 @@ public class IDChangeCommand extends Command{
     public void execute() {
         if (checkValid()) {
             // update stored name in pool server (clientmeta, owned rooms, and currently connected room's client list)
+            this.user.setName(this.identity);
 
+//            for (Room room : this.user.getOwnedRooms()) {
+//                // TODO: not sure if this updates automatically or if i need to do it manually like this
+//                room.setOwner(this.user);
+//            }
 
-            // notify the user of new identity
+            // notify all users (including this user) of new identity
             IdentityChange identityChange = new IdentityChange(this.former, this.identity);
-            poolServer.sendMessage(gson.toJson(identityChange), this.user);
-
-            // notify all users of new identity
-
+            poolServer.broadcastMessageToAll(gson.toJson(identityChange));
         }
         else {
             // invalid therefore send with former=identity
+            IdentityChange identityChange = new IdentityChange(this.former, this.former);
+            poolServer.sendMessage(gson.toJson(identityChange), this.user);
         }
 
     }
@@ -41,10 +48,13 @@ public class IDChangeCommand extends Command{
     @Override
     public boolean checkValid() {
         // check if provided name is valid (starts with upper/lower case, only consists of a-zA-Z0-9, >=3 and <=16 in length
+        if (!this.identity.matches("^[a-zA-Z][a-zA-Z0-9]{2,15}$")) {
+            return false;
+        }
 
         // check if already in use
         for (ClientMeta user : poolServer.getUsers()) {
-            if (user.getName() == this.identity) {
+            if (user.getName().equals(this.identity)) {
                 // already in use!
                 return false;
             }

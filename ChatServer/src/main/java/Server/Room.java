@@ -1,5 +1,6 @@
 package Server;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Room {
@@ -34,8 +35,21 @@ public class Room {
         return connectedUsers;
     }
 
+    public ArrayList<String> getConnectedUserNames() {
+        ArrayList<String> connectedUserNames = new ArrayList<>();
+        for (ClientMeta user : this.connectedUsers) {
+            connectedUserNames.add(user.getName());
+        }
+
+        return connectedUserNames;
+    }
+
     public void addToConnectedUsers(ClientMeta newUser) {
         this.connectedUsers.add(newUser);
+    }
+
+    public void removeFromConnectedUsers(ClientMeta user) {
+        this.connectedUsers.remove(user);
     }
 
     public void setConnectedUsers(HashSet<ClientMeta> connectedUsers) {

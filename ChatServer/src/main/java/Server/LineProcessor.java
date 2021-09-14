@@ -34,22 +34,22 @@ public class LineProcessor implements Runnable {
                         command = new IDChangeCommand(this.poolServer, user, inputs[1]);
                     }
                     else if (inputs[0].equalsIgnoreCase("#join")) {
-                        command = new JoinCommand();
+                        command = new JoinCommand(this.poolServer, user, inputs[1]);
                     }
                     else if (inputs[0].equalsIgnoreCase("#who")) {
-                        command = new WhoCommand();
+                        command = new WhoCommand(this.poolServer, user);
                     }
                     else if (inputs[0].equalsIgnoreCase("#list")) {
-                        command = new ListCommand();
+                        command = new ListCommand(this.poolServer, user);
                     }
                     else if (inputs[0].equalsIgnoreCase("#createroom")) {
-                        command = new CreateRoomCommand();
+                        command = new CreateRoomCommand(this.poolServer, user, inputs[1]);
                     }
                     else if (inputs[0].equalsIgnoreCase("#delete")) {
-                        command = new DeleteCommand();
+                        command = new DeleteCommand(this.poolServer, user, inputs[1]);
                     }
                     else if (inputs[0].equalsIgnoreCase("quit")) {
-                        command = new QuitCommand();
+                        command = new QuitCommand(this.poolServer, user);
                     }
 //                else {
 //                    // not a valid command!

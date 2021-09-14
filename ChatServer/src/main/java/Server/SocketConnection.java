@@ -34,6 +34,16 @@ public class SocketConnection {
         return socket;
     }
 
+    public void close() {
+        try {
+            this.reader.close();
+            this.writer.close();
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

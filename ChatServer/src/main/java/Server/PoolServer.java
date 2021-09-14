@@ -1,6 +1,7 @@
 package Server;
 
 import Message.IdentityChange;
+import Message.RoomContents;
 import Message.RoomList;
 import Message.Who;
 import Server.Commands.IDChangeCommand;
@@ -88,8 +89,8 @@ public class PoolServer{
                     sendMessage(gson.toJson(idChange), newUser);
 
                     // send room contents message to new user
-                    Who who = new Who("MainHall");
-                    sendMessage(gson.toJson(who), newUser);
+                    RoomContents roomContents = new RoomContents("MainHall", "", this.mainHall.getConnectedUserNames());
+                    sendMessage(gson.toJson(roomContents), newUser);
 
                     // send room list message to new user
                     RoomList roomList = new RoomList(this.getRoomLists());
@@ -104,7 +105,7 @@ public class PoolServer{
         }
     }
 
-    private HashMap<String, Integer> getRoomLists() {
+    public HashMap<String, Integer> getRoomLists() {
         HashMap<String, Integer> roomList = new HashMap<>();
         for (Room room : this.rooms) {
             roomList.put(room.getRoomId(), room.getConnectedUsers().size());
@@ -112,12 +113,20 @@ public class PoolServer{
         return roomList;
     }
 
+    public void addToRooms(Room room) {
+        this.rooms.add(room);
+    }
+
+    public void removeFromRooms(Room room) {
+        this.rooms.remove(room);
+    }
+
     private int getLowestUnoccupiedId() {
         if (this.defaultIds.size() == 0) {
             return 1;
         }
         else {
-            int i = 0;
+            int i = 1;
             while (true) {
                 if (!this.defaultIds.contains(i)) {
                     return i;
@@ -151,5 +160,9 @@ public class PoolServer{
 
     public HashSet<ClientMeta> getUsers() {
         return users;
+    }
+
+    public HashSet<Room> getRooms() {
+        return rooms;
     }
 }
