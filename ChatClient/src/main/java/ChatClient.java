@@ -194,7 +194,8 @@ public class ChatClient {
                 try {
                     String in = reader.readLine();
                     if (in != null) {
-                        rsp = gson.fromJson(in, Map.class);
+                        System.out.printf("%s\n", in);
+//                        rsp = gson.fromJson(in, Map.class);
                     } else {
                         connectionAlive = false;
                     }

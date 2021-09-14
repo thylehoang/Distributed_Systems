@@ -1,10 +1,5 @@
 package Server;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -12,12 +7,13 @@ public class PoolHandler implements Runnable {
     /*
      Handles thread scheduling with the pool
      */
-
+    private PoolServer poolServer;
     public static LinkedBlockingQueue<SocketConnection> openSockets;
     private ThreadPool threadPool;
 
-    public PoolHandler(int nThreads) {
+    public PoolHandler(int nThreads, PoolServer poolServer) {
         this.threadPool = new ThreadPool(nThreads);
+        this.poolServer = poolServer;
         openSockets = new LinkedBlockingQueue<SocketConnection>();
     }
 
@@ -41,7 +37,7 @@ public class PoolHandler implements Runnable {
                             System.out.printf("Reading from [%d] buffer\n", socketConnection.getSocket().getPort());
                             String in = socketConnection.getReader().readLine();
                             if (in != null) {
-                                LineProcessor lineProcessor = new LineProcessor(in, socketConnection.getSocket().getPort());
+                                LineProcessor lineProcessor = new LineProcessor(socketConnection, in, poolServer);
                                 threadPool.execute(lineProcessor);
                             }
                         }

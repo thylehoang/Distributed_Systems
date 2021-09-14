@@ -1,9 +1,18 @@
 package Server;
 
+import Message.IdentityChange;
+import Message.RoomList;
+import Message.Who;
+import Server.Commands.IDChangeCommand;
+import Server.Commands.ListCommand;
+import Server.Commands.WhoCommand;
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -13,27 +22,24 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class PoolServer{
     private boolean alive = false;
     public static final int PORT = 4444;
-//    private ThreadPool threadPool;
     private PoolHandler poolHandler;
-//    private int nThreads;
-//    private final List<PoolServer.ThreadWorker> threads;
-//    private final BlockingQueue<Runnable> taskQueue;
-//    private List<PoolServer.ChatConnection> connectionList = new ArrayList<>();
 
-//    //to store the rooms
-//    private HashMap<String, List<String>> rooms;
-//
-//    //to store owner of certain rooms
-//    private HashMap<String, String> owners;
-//
-//
-//    //this to store all the interger are occupied from users
-//    private List<Integer> id;
+    private ClientMeta serverUser;
+    private Room mainHall;
+    private HashSet<ClientMeta> users;
+    private HashSet<Room> rooms;
+    private HashSet<Integer> defaultIds;
 
     public PoolServer() {
-//        this.nThreads = nThreads;
-//        this.threadPool = new ThreadPool(nThreads);
-        this.poolHandler = new PoolHandler(2);
+        this.poolHandler = new PoolHandler(2, this);
+        this.users = new HashSet<>();
+        this.rooms = new HashSet<>();
+        this.defaultIds = new HashSet<>();
+
+        // create and add main hall to rooms (create dummy server user)
+        this.serverUser = new ClientMeta();
+        this.mainHall = new Room("MainHall", this.serverUser);
+        this.rooms.add(mainHall);
     }
 
     //main functions
@@ -46,39 +52,6 @@ public class PoolServer{
         poolServer.handle();
     }
 
-    //this is to create a pool of thread within the server
-//    public PoolServer() {
-////        this.threads = new ArrayList<>();
-////        this.taskQueue = new LinkedBlockingQueue<>();
-////        for (int i = 0; i < nThreads; i++) {
-////            threads.add(new PoolServer.ThreadWorker());
-////            threads.get(i).start();
-////        }
-//    }
-
-    //add new connection into list //should we make this public???
-//    public void join(PoolServer.ChatConnection conn) {
-//        synchronized (connectionList) {
-//            connectionList.add(conn);
-//        }
-//        //synchronized (id){
-//            //Collections.sort(id);
-//            //for(int i = 0; i< id.size(); i++){
-//                //if i not in id
-//                ///new identity = guest + i
-//                //break
-//            //}
-//        //}
-//    }
-
-    //if the connection receive an task, add to the list then notify the worker
-//    public void execute(Runnable task) {
-//        synchronized (taskQueue) {
-//            taskQueue.add(task);
-//            taskQueue.notify();
-//        }
-//    }
-
     private void handle() {
         ServerSocket serverSocket;
         try {
@@ -90,107 +63,93 @@ public class PoolServer{
                 Socket socket = serverSocket.accept();
                 System.out.printf("New connection established! Adding to pool handler open sockets\n");
                 if (socket != null) {
+                    // add socket to socket pool
                     SocketConnection socketConnection = new SocketConnection(socket);
                     poolHandler.addToOpenSockets(socketConnection);
-                }
-//                openSockets.add(socket);
 
-//                ConnectionTask connTask = new ConnectionTask(socket);
-//                threadPool.execute(connTask);
-//                ChatConnection connection = new ChatConnection(socket);
-//                join(connection);
-//                connection.run(); //?????
+                    // create new ClientMeta for new user, add user to users, add new id to default ids
+                    int defaultID = getLowestUnoccupiedId();
+                    System.out.printf("Creating new ClientMeta for guest%d\n", defaultID);
+                    ClientMeta newUser = new ClientMeta(defaultID, this.mainHall, socketConnection);
+                    this.users.add(newUser);
+                    this.defaultIds.add(defaultID);
+
+                    // add new user to main hall (can probably make this more efficient)
+                    for (Room room : this.rooms) {
+                        if (room.getRoomId() == "MainHall") {
+                            room.addToConnectedUsers(newUser);
+                        }
+                    }
+
+                    // send initial identity change message to new user
+                    Gson gson = new Gson();
+
+                    IdentityChange idChange = new IdentityChange("", newUser.getName());
+                    sendMessage(gson.toJson(idChange), newUser);
+
+                    // send room contents message to new user
+                    Who who = new Who("MainHall");
+                    sendMessage(gson.toJson(who), newUser);
+
+                    // send room list message to new user
+                    RoomList roomList = new RoomList(this.getRoomLists());
+                    sendMessage(gson.toJson(roomList), newUser);
+
+                    // TODO: send initial room join message to all connected clients (in main hall?)
+
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    //each threads in the pools
-//    private class ThreadWorker extends Thread {
-//        //wait for the task to add in the queue then execute it
-//        @Override
-//        public void run() {
-//            Runnable task;
-//            while (true){
-//                synchronized (taskQueue){
-//                    while (taskQueue.isEmpty()){
-//                        try {
-//                            taskQueue.wait();
-//                        } catch (InterruptedException e) {
-//                            System.out.printf("Receive interruption, %s\n", e.getMessage());
-//                        }
-//                    }
-//                    task = taskQueue.poll();
-//                }
-//                task.run();
-//            }
-//        }
-//    }
+    private HashMap<String, Integer> getRoomLists() {
+        HashMap<String, Integer> roomList = new HashMap<>();
+        for (Room room : this.rooms) {
+            roomList.put(room.getRoomId(), room.getConnectedUsers().size());
+        }
+        return roomList;
+    }
 
-    //chat connection - each connection is a seperate threads to hold the connection
-//    private class ChatConnection extends Thread{
-//        private Socket socket;
-//        private BufferedReader reader;
-//        private PrintWriter writer;
-//        private boolean connectionAlive = false;
-//        private Task task = null;
-//        private String identity;
-//
-//
-//        public ChatConnection(Socket socket) throws IOException {
-//            this.socket = socket;
-//            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            this.writer = new PrintWriter(socket.getOutputStream());
-//        }
-//
-//        @Override
-//        public void run() {
-//            connectionAlive = true;
-//            while (connectionAlive) {
-//                try {
-//                    String in  = reader.readLine();
-//                    if (in != null) {
-//                        //check whether it is a task
-//                        //check it type
-//
-//                        //get json object
-//                        //if (in.length() ==0){
-//                        // .....
-//                        //}else{
-//                        // Map<String, Integer> map = new Gson().fromJson(int, new TypeToken<HashMap<String, String>>() {}.getType());
-//                        //}
-//                        //Server.Task task = new Server.Task(put Hashmap in here for create????);
-//                        //execute(task);
-//                    } else {
-//                        connectionAlive = false;
-//                    }
-//                } catch (IOException e) {
-//                    connectionAlive = false;
-//                }
-//            }
-//            close();
-//        }
-//
-//        public void close() {
-//            try {
-//                socket.close();
-//                reader.close();
-//                writer.close();
-//            } catch (IOException e) {
-//                System.out.println(e.getMessage());
-//            }
-//        }
-//    }
+    private int getLowestUnoccupiedId() {
+        if (this.defaultIds.size() == 0) {
+            return 1;
+        }
+        else {
+            int i = 0;
+            while (true) {
+                if (!this.defaultIds.contains(i)) {
+                    return i;
+                }
+                i = i + 1;
+            }
+        }
 
-    //this is creation of one task
-//    private class Task implements Runnable{
-//        public Task createTask(Object jsonObj){
-//            /////
-//            return null;
-//        }
-//
-//    }
+    }
 
+    public void broadcastMessageToAll(String jsonMessage) {
+        for (Room room : rooms) {
+            broadcastMessage(jsonMessage, room);
+        }
+    }
 
+    public void broadcastMessage(String jsonMessage, Room room) {
+        HashSet<ClientMeta> connectedUsers = room.getConnectedUsers();
+        for (ClientMeta user : connectedUsers) {
+            sendMessage(jsonMessage, user);
+        }
+    }
+
+    public void sendMessage(String jsonMessage, ClientMeta user) {
+        if (user.getSocketConnection() != null) {
+            user.getSocketConnection().getWriter().print(jsonMessage);
+            user.getSocketConnection().getWriter().println();
+            user.getSocketConnection().getWriter().flush();
+        }
+    }
+
+    public HashSet<ClientMeta> getUsers() {
+        return users;
+    }
 }
