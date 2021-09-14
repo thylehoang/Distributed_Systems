@@ -1,4 +1,6 @@
 package Server;
+import Connection.SocketConnection;
+
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;

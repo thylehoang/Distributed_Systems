@@ -1,24 +1,15 @@
 package Server;
 
+import Connection.SocketConnection;
 import Message.IdentityChange;
 import Message.RoomContents;
 import Message.RoomList;
-import Message.Who;
-import Server.Commands.IDChangeCommand;
-import Server.Commands.ListCommand;
-import Server.Commands.WhoCommand;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class PoolServer{
     private boolean alive = false;

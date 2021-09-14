@@ -1,5 +1,7 @@
 package Server;
 
+import Connection.SocketConnection;
+
 import java.util.HashSet;
 
 public class ClientMeta {

@@ -1,5 +1,6 @@
 package Server;
 
+import Connection.SocketConnection;
 import Message.Message;
 import Server.Commands.*;
 import com.google.gson.Gson;
