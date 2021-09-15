@@ -3,7 +3,6 @@ import Connection.SocketConnection;
 import Server.Commands.QuitCommand;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -11,25 +10,24 @@ public class PoolHandler implements Runnable {
     /*
      Handles thread scheduling with the pool
      */
-    private PoolServer poolServer;
+    private final PoolServer poolServer;
     public static LinkedBlockingQueue<SocketConnection> openSockets;
-    private ThreadPool threadPool;
+    private final ThreadPool threadPool;
 
     public PoolHandler(int nThreads, PoolServer poolServer) {
         this.threadPool = new ThreadPool(nThreads);
         this.poolServer = poolServer;
-        openSockets = new LinkedBlockingQueue<SocketConnection>();
+        openSockets = new LinkedBlockingQueue<>();
     }
 
     @Override
     public void run() {
-        // constantly pull socket from socket queue, delegate to threadpool to process, then put back into socket queue
+        // constantly pull socket from socket queue, delegate to threadPool to process, then put back into socket queue
         // (unless socket closes)
         while (true) {
             try {
                 SocketConnection socketConnection = openSockets.poll(50, TimeUnit.MICROSECONDS);
                 if (socketConnection != null) {
-//                    System.out.printf("Looking at socket [%d]\n", socketConnection.getSocket().getPort());
                     if (socketConnection.getSocket().isClosed()) {
                         System.out.printf("Socket [%d] is closed! Not re-adding to queue, and continuing\n",
                                 socketConnection.getSocket().getPort());
@@ -37,7 +35,7 @@ public class PoolHandler implements Runnable {
                     }
                     try {
                         if (socketConnection.getReader().ready()) {
-                            System.out.printf("Reading from [%d] buffer\n", socketConnection.getSocket().getPort());
+//                            System.out.printf("Reading from [%d] buffer\n", socketConnection.getSocket().getPort());
                             String in = socketConnection.getReader().readLine();
                             if (in != null) {
                                 LineProcessor lineProcessor = new LineProcessor(socketConnection, in, poolServer);
@@ -56,9 +54,6 @@ public class PoolHandler implements Runnable {
                     }
                     openSockets.put(socketConnection);
                 }
-//                else {
-//                    System.out.printf("No sockets in queue!\n");
-//                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

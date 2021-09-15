@@ -40,6 +40,13 @@ public class JoinCommand extends Command {
             this.poolServer.broadcastMessage(gson.toJson(roomChange), this.currentRoom);
             this.poolServer.broadcastMessage(gson.toJson(roomChange), requestedRoom);
 
+            // check if room that we moved out of is not mainhall, has empty owner, and is now empty; if so, then we delete the room
+            if (!this.currentRoom.getRoomId().equals("MainHall") &&
+                    this.currentRoom.getOwner().getName().equals("") &&
+                    this.currentRoom.getConnectedUsers().size() == 0) {
+                this.poolServer.removeFromRooms(this.currentRoom);
+            }
+
             // if new room is MainHall, then also send RoomContents (for MainHall) and RoomList to client
             if (this.newRoomId.equals("MainHall")) {
                 RoomContents roomContents = new RoomContents("MainHall", "", requestedRoom.getConnectedUserNames());
@@ -49,12 +56,6 @@ public class JoinCommand extends Command {
                 this.poolServer.sendMessage(gson.toJson(roomList), this.user);
             }
 
-            // check if room that we moved out of is not mainhall, has empty owner, and is now empty; if so, then we delete the room
-            if (!this.currentRoom.getRoomId().equals("MainHall") &&
-                    this.currentRoom.getOwner().getName().equals("") &&
-                    this.currentRoom.getConnectedUsers().size() == 0) {
-                this.poolServer.removeFromRooms(this.currentRoom);
-            }
         }
         else {
             // send RoomChange message to client (former = roomid)

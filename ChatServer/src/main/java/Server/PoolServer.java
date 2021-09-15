@@ -1,7 +1,6 @@
 package Server;
 
 import Connection.SocketConnection;
-import Message.C2S.Quit;
 import Message.S2C.NewIdentity;
 import Message.S2C.RoomChange;
 import Message.S2C.RoomContents;
@@ -18,14 +17,14 @@ public class PoolServer{
     private boolean alive = false;
     // TODO: make CL argument
 //    public static final int PORT = 4444;
-    private int port;
-    private PoolHandler poolHandler;
+    private final int port;
+    private final PoolHandler poolHandler;
 
-    private ClientMeta serverUser;
-    private Room mainHall;
-    private HashSet<ClientMeta> users;
-    private HashSet<Room> rooms;
-    private HashSet<Integer> defaultIds;
+    private final ClientMeta serverUser;
+    private final Room mainHall;
+    private final HashSet<ClientMeta> users;
+    private final HashSet<Room> rooms;
+    private final HashSet<Integer> defaultIds;
 
     public PoolServer(int port) {
         this.poolHandler = new PoolHandler(2, this);
@@ -67,8 +66,9 @@ public class PoolServer{
             while (alive) {
                 // wait until a new client connects (.accept is a blocking method)
                 Socket socket = serverSocket.accept();
-                System.out.printf("New connection established! Adding to pool handler open sockets\n");
                 if (socket != null) {
+                    System.out.printf("New connection [%d] established! Adding to pool handler open sockets\n", socket.getPort());
+
                     // add socket to socket pool
                     SocketConnection socketConnection = new SocketConnection(socket);
                     poolHandler.addToOpenSockets(socketConnection);
@@ -82,7 +82,7 @@ public class PoolServer{
 
                     // add new user to main hall (can probably make this more efficient)
                     for (Room room : this.rooms) {
-                        if (room.getRoomId() == "MainHall") {
+                        if (room.getRoomId().equals("MainHall")) {
                             room.addToConnectedUsers(newUser);
                         }
                     }

@@ -29,7 +29,10 @@ public class QuitCommand extends Command {
             // rooms owned by user set to empty owner
             for (Room room : this.user.getOwnedRooms()) {
                 room.setOwner(new ClientMeta());
-                // check if empty; if so, delete those rooms
+            }
+
+            // check if rooms previously owned by owner are empty; if so, delete those rooms
+            for (Room room : this.user.getOwnedRooms()) {
                 if (room.getConnectedUsers().size() == 0) {
                     this.poolServer.removeFromRooms(room);
                 }

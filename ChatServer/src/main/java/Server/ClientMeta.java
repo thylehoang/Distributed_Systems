@@ -73,4 +73,12 @@ public class ClientMeta {
     public void setSocketConnection(SocketConnection socketConnection) {
         this.socketConnection = socketConnection;
     }
+
+    public void addToOwnedRooms(Room room) {
+        this.ownedRooms.add(room);
+    }
+
+    public void removeFromOwnedRooms(Room room) {
+        this.ownedRooms.remove(room);
+    }
 }

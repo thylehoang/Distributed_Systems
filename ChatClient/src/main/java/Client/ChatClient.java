@@ -60,7 +60,7 @@ public class ChatClient {
                 if (socketConnection.getReader().ready()) {
                     String in = socketConnection.getReader().readLine();
                     if (in != null) {
-                        System.out.println(in);
+//                        System.out.println(in);
                         this.clientLineProcessor.processLine(in);
                     }
                 }

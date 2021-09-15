@@ -25,6 +25,9 @@ public class CreateRoomCommand extends Command {
             Room room = new Room(this.newRoomId, this.user);
             this.poolServer.addToRooms(room);
 
+            // add room to user's owned rooms list
+            this.user.addToOwnedRooms(room);
+
             // send RoomList to client
             RoomList roomList = new RoomList(this.poolServer.getRoomLists());
             this.poolServer.sendMessage(gson.toJson(roomList), this.user);
