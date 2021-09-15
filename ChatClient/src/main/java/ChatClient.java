@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -225,45 +226,56 @@ public class ChatClient {
             this.writer = writer;
         }
 
-        private JsonObject handleRequest(String[] inps){
+        private String handleRequest(String[] inps){
             String command = inps[0];
-            String rsp;
+            //String rsp;
+            HashMap<String, String> rsp = new HashMap<>();
             if (command.equals("newidentity")){
-                rsp = String.format("{\"type\": %s,\n \"identity\": %s\n}", command, inps[1]);
+                rsp.put("type", command);
+                rsp.put("identity", inps[1]);
+                //rsp = String.format("{\"type\": %s,\n \"identity\": %s\n}", command, inps[1]);
             }else if (command.equals("join")){
-                rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
+                rsp.put("type", command);
+                rsp.put("roomid", inps[1]);
+                //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("who")){
-                rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
+                rsp.put("type", command);
+                rsp.put("roomid", inps[1]);
+                //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("list")){
-                rsp = String.format("{\"type\": %s\n}", command);
+                rsp.put("type", command);
+                //rsp = String.format("{\"type\": %s\n}", command);
             }else if (command.equals("createroom")){
                 setWant(inps[1]);
                 setRequestRoom(true);
-                rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
+                rsp.put("type", command);
+                rsp.put("roomid", inps[1]);
+                //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("delete")){
-                rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
+                rsp.put("type", command);
+                rsp.put("roomid", inps[1]);
+                //rsp = String.format("{\"type\": %s,\n \"roomid\": %s\n}", command, inps[1]);
             }else if (command.equals("quit")){
-                rsp = String.format("{\"type\": %s\n}", command);
+                rsp.put("type", command);
+                //rsp = String.format("{\"type\": %s\n}", command);
             }else{
-                rsp = String.format("{\"type\": message,\n \"content\": %s\n}", command);
+                rsp.put("type", "message");
+                rsp.put("content", inps[1]);
+                //rsp = String.format("{\"type\": message,\n \"content\": %s\n}", command);
             }
-            return gson.fromJson(rsp, JsonObject.class);
+            return gson.toJson(rsp);
         }
 
         private void handleInput(String inp){
-//            Pattern pattern = Pattern.compile("#[a-zA-Z]\\s[a-zA-Z]+");
-//            Matcher match = pattern.matcher(inp);
-//            boolean command = match.matches();
-//            if (command) {
-//                inp = inp.substring(1);
-//            }
-//            String[] spls = inp.split("\\s+");
-//            JsonObject rsp = handleRequest(spls);
-//            sendMessage(rsp.toString());
-            System.out.printf("Sending message '%s' to server\n", inp);
-//            sendMessage(inp);
-            writer.println(inp);
-            writer.flush();
+            Pattern pattern = Pattern.compile("#[a-zA-Z]\\s[a-zA-Z]+");
+            Matcher match = pattern.matcher(inp);
+            boolean command = match.matches();
+            if (command) {
+                inp = inp.substring(1);
+            }
+            String[] spls = inp.split("\\s+");
+            String rsp = handleRequest(spls);
+            sendMessage(rsp);
         }
 
         @Override
