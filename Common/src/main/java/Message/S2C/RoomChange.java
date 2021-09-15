@@ -1,4 +1,4 @@
-package Message;
+package Message.S2C;
 
 public class RoomChange {
     private String type = "roomchange";

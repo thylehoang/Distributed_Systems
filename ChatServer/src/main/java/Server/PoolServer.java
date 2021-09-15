@@ -1,9 +1,9 @@
 package Server;
 
 import Connection.SocketConnection;
-import Message.IdentityChange;
-import Message.RoomContents;
-import Message.RoomList;
+import Message.S2C.NewIdentity;
+import Message.S2C.RoomContents;
+import Message.S2C.RoomList;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -76,8 +76,8 @@ public class PoolServer{
                     // send initial identity change message to new user
                     Gson gson = new Gson();
 
-                    IdentityChange idChange = new IdentityChange("", newUser.getName());
-                    sendMessage(gson.toJson(idChange), newUser);
+                    NewIdentity newIdentity = new NewIdentity("", newUser.getName());
+                    sendMessage(gson.toJson(newIdentity), newUser);
 
                     // send room contents message to new user
                     RoomContents roomContents = new RoomContents("MainHall", "", this.mainHall.getConnectedUserNames());

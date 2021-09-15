@@ -1,4 +1,4 @@
-package Message;
+package Message.C2S;
 
 public class Join {
     private String type = "join";

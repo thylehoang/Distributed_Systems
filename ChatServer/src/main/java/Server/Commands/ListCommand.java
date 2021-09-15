@@ -1,6 +1,6 @@
 package Server.Commands;
 
-import Message.RoomList;
+import Message.S2C.RoomList;
 import Server.ClientMeta;
 import Server.PoolServer;
 import com.google.gson.Gson;

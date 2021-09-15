@@ -1,4 +1,4 @@
-package Message;
+package Message.S2C;
 
 import java.util.ArrayList;
 

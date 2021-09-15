@@ -1,7 +1,7 @@
 package Server;
 
 import Connection.SocketConnection;
-import Message.Message;
+import Message.S2C.MessageS2C;
 import Server.Commands.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -64,8 +64,8 @@ public class LineProcessor implements Runnable {
                 }
                 else if (type.equals("message")) {
                     String messageContent = jsonObject.get("content").getAsString();
-                    Message message = new Message(user.getName(), messageContent);
-                    this.poolServer.broadcastMessage(gson.toJson(message), user.getConnectedRoom());
+                    MessageS2C messageS2C = new MessageS2C(user.getName(), messageContent);
+                    this.poolServer.broadcastMessage(gson.toJson(messageS2C), user.getConnectedRoom());
                 }
 
                 if (command != null) {

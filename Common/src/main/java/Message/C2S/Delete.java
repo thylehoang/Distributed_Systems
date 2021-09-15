@@ -1,4 +1,4 @@
-package Message;
+package Message.C2S;
 
 public class Delete {
     private String type = "delete";

@@ -1,9 +1,8 @@
 package Server.Commands;
 
-import Message.RoomChange;
-import Message.RoomContents;
-import Message.RoomList;
-import Message.Who;
+import Message.S2C.RoomChange;
+import Message.S2C.RoomContents;
+import Message.S2C.RoomList;
 import Server.ClientMeta;
 import Server.PoolServer;
 import Server.Room;

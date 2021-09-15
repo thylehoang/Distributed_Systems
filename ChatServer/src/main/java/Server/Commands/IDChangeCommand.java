@@ -1,12 +1,9 @@
 package Server.Commands;
 
-import Message.IdentityChange;
+import Message.S2C.NewIdentity;
 import Server.ClientMeta;
 import Server.PoolServer;
-import Server.Room;
 import com.google.gson.Gson;
-
-import java.util.HashSet;
 
 public class IDChangeCommand extends Command{
     private PoolServer poolServer;
@@ -29,13 +26,13 @@ public class IDChangeCommand extends Command{
             this.user.setName(this.identity);
 
             // notify all users (including this user) of new identity
-            IdentityChange identityChange = new IdentityChange(this.former, this.identity);
-            poolServer.broadcastMessageToAll(gson.toJson(identityChange));
+            NewIdentity newIdentity = new NewIdentity(this.former, this.identity);
+            poolServer.broadcastMessageToAll(gson.toJson(newIdentity));
         }
         else {
             // invalid therefore send with former=identity
-            IdentityChange identityChange = new IdentityChange(this.former, this.former);
-            poolServer.sendMessage(gson.toJson(identityChange), this.user);
+            NewIdentity newIdentity = new NewIdentity(this.former, this.former);
+            poolServer.sendMessage(gson.toJson(newIdentity), this.user);
         }
 
     }

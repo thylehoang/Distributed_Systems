@@ -1,12 +1,10 @@
 package Server.Commands;
 
-import Message.RoomContents;
+import Message.S2C.RoomContents;
 import Server.ClientMeta;
 import Server.PoolServer;
 import Server.Room;
 import com.google.gson.Gson;
-
-import java.util.ArrayList;
 
 public class WhoCommand extends Command {
     private PoolServer poolServer;

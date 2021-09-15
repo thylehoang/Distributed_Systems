@@ -1,6 +1,6 @@
 package Server.Commands;
 
-import Message.RoomChange;
+import Message.S2C.RoomChange;
 import Server.ClientMeta;
 import Server.PoolServer;
 import Server.Room;

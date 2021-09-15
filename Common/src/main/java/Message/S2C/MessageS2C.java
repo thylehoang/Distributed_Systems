@@ -1,11 +1,11 @@
-package Message;
+package Message.S2C;
 
-public class Message {
+public class MessageS2C {
     private String type = "message";
     private String identity;
     private String content;
 
-    public Message(String identity, String content) {
+    public MessageS2C(String identity, String content) {
         this.identity = identity;
         this.content = content;
     }

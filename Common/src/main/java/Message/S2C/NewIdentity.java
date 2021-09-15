@@ -1,11 +1,11 @@
-package Message;
+package Message.S2C;
 
-public class IdentityChange {
+public class NewIdentity {
     private String type = "newidentity";
     private String former;
     private String identity;
 
-    public IdentityChange(String former, String identity) {
+    public NewIdentity(String former, String identity) {
         this.former = former;
         this.identity = identity;
     }
