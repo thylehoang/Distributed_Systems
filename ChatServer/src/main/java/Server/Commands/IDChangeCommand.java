@@ -25,6 +25,13 @@ public class IDChangeCommand extends Command{
             // update stored name in pool server (should automatically propagate to all uses of this clientmeta)
             this.user.setName(this.identity);
 
+            // if original name was guest%d, then be sure to free the %d in poolserver
+            if (this.former.matches("^guest[1-9][0-9]*$")) {
+                String guestIdNumber = this.former.substring(5);
+                int idNumber = Integer.parseInt(guestIdNumber);
+                this.poolServer.removeFromDefaultIds(idNumber);
+            }
+
             // notify all users (including this user) of new identity
             NewIdentity newIdentity = new NewIdentity(this.former, this.identity);
             poolServer.broadcastMessageToAll(gson.toJson(newIdentity));

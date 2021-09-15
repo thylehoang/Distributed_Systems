@@ -1,7 +1,9 @@
 package Server;
 import Connection.SocketConnection;
+import Server.Commands.QuitCommand;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +46,12 @@ public class PoolHandler implements Runnable {
                         }
 
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // client disconnected -- treat as quit message
+                        System.out.printf("Client [%d] disconnected! (Failed buffer ready check, or cannot write to socket)\n",
+                                socketConnection.getSocket().getPort());
+                        // get user from pool server
+                        disconnectSocket(socketConnection);
+//                        e.printStackTrace();
                         continue;
                     }
                     openSockets.put(socketConnection);
@@ -63,6 +70,28 @@ public class PoolHandler implements Runnable {
             openSockets.put(socketConnection);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    public ClientMeta getSocketUser(SocketConnection socketConnection) {
+        for (ClientMeta user : this.poolServer.getUsers()) {
+            if (user.getSocketConnection().equals(socketConnection)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public void removeFromOpenSockets(SocketConnection socketConnection) {
+        openSockets.remove(socketConnection);
+    }
+
+    private void disconnectSocket(SocketConnection socketConnection) {
+        ClientMeta user = getSocketUser(socketConnection);
+        // to prevent double calling, we also check if the user has already been set to have 'disconnected' status
+        if (user != null && !user.getDisconnected()) {
+            QuitCommand quitCommand = new QuitCommand(this.poolServer, user);
+            quitCommand.execute();
         }
     }
 }

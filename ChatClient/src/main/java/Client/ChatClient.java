@@ -12,27 +12,40 @@ public class ChatClient {
     private PrintWriter writer;
     private ClientLineProcessor clientLineProcessor;
 
+    private String host;
+    private int port;
+
     private String name = "";
     private String roomId = "";
 
-    public ChatClient() {
+    public ChatClient(String host, int port) {
         this.writer = new PrintWriter(System.out);
+        this.host = host;
+        this.port = port;
     }
 
     public static void main(String[] args) {
-        ChatClient chatClient = new ChatClient();
+        // parse arguments (should be <hostname> [-p port])
+        if (args.length > 0) {
+            String host = args[0];
+            int port = 4444;
+            if (args.length == 3) {
+                if (args[1].equals("-p")) {
+                    port = Integer.parseInt(args[2]);
+                }
+            }
 
-        // TODO: change to CL arguments
-        String host = "localhost";
-        int port = 4444;
-
-        chatClient.handleConnection(host, port);
-
+            ChatClient chatClient = new ChatClient(host, port);
+            chatClient.handleConnection();
+        }
+        else {
+            System.out.println("Please specify hostname!");
+        }
     }
 
-    private void handleConnection(String host, int port) {
+    private void handleConnection() {
         try {
-            Socket socket = new Socket(host, port);
+            Socket socket = new Socket(this.host, this.port);
             SocketConnection socketConnection = new SocketConnection(socket);
 
             // run STDIN reader on separate thread
@@ -47,7 +60,7 @@ public class ChatClient {
                 if (socketConnection.getReader().ready()) {
                     String in = socketConnection.getReader().readLine();
                     if (in != null) {
-//                        System.out.println(in);
+                        System.out.println(in);
                         this.clientLineProcessor.processLine(in);
                     }
                 }

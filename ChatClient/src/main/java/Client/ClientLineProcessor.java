@@ -4,6 +4,7 @@ import Connection.SocketConnection;
 import Message.Components.RoomListComponent;
 import Message.S2C.RoomContents;
 import com.google.gson.*;
+import com.google.gson.stream.MalformedJsonException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +71,9 @@ public class ClientLineProcessor {
                 this.chatClient.setName(identity);
             }
         }
+        if (former.equals("")) {
+            return String.format("%s has connected\n", identity);
+        }
         return String.format("%s is now %s\n", former, identity);
     }
 
@@ -91,14 +95,21 @@ public class ClientLineProcessor {
 
             // check if disconnecting
             if (roomId.equals("")) {
+                System.out.println("Disconnecting!");
                 // disconnect!
                 this.socketConnection.close();
                 this.chatClient.setKeepAlive(false);
+                // terminate program
+                System.exit(0);
             }
         }
 
         if (former.equals("")) {
             return String.format("%s moved to %s\n", identity, roomId);
+        }
+
+        if (roomId.equals("")) {
+            return String.format("%s disconnected\n", identity);
         }
 
         return String.format("%s moved from %s to %s\n", identity, former, roomId);

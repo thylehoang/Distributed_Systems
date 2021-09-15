@@ -1,10 +1,12 @@
 package Server;
 
 import Connection.SocketConnection;
+import Message.C2S.Quit;
 import Message.S2C.NewIdentity;
 import Message.S2C.RoomChange;
 import Message.S2C.RoomContents;
 import Message.S2C.RoomList;
+import Server.Commands.QuitCommand;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -15,7 +17,8 @@ import java.util.*;
 public class PoolServer{
     private boolean alive = false;
     // TODO: make CL argument
-    public static final int PORT = 4444;
+//    public static final int PORT = 4444;
+    private int port;
     private PoolHandler poolHandler;
 
     private ClientMeta serverUser;
@@ -24,11 +27,12 @@ public class PoolServer{
     private HashSet<Room> rooms;
     private HashSet<Integer> defaultIds;
 
-    public PoolServer() {
+    public PoolServer(int port) {
         this.poolHandler = new PoolHandler(2, this);
         this.users = new HashSet<>();
         this.rooms = new HashSet<>();
         this.defaultIds = new HashSet<>();
+        this.port = port;
 
         // create and add main hall to rooms (create dummy server user)
         this.serverUser = new ClientMeta();
@@ -38,7 +42,15 @@ public class PoolServer{
 
     //main functions
     public static void main(String[] args) {
-        PoolServer poolServer = new PoolServer();
+        // parse arguments (should only be -p port)
+        int port = 4444;
+        if (args.length == 2) {
+            if (args[0].equals("-p")) {
+                port = Integer.parseInt(args[1]);
+            }
+        }
+
+        PoolServer poolServer = new PoolServer(port);
         // run the pool handler on separate thread
         Thread t = new Thread(poolServer.poolHandler);
         t.start();
@@ -49,8 +61,8 @@ public class PoolServer{
     private void handle() {
         ServerSocket serverSocket;
         try {
-            serverSocket = new ServerSocket(PORT);
-            System.out.printf("listening on port %d\n", PORT);
+            serverSocket = new ServerSocket(this.port);
+            System.out.printf("listening on port %d\n", this.port);
             alive = true;
             while (alive) {
                 // wait until a new client connects (.accept is a blocking method)
@@ -89,7 +101,7 @@ public class PoolServer{
                     RoomList roomList = new RoomList(this.getRoomLists());
                     sendMessage(gson.toJson(roomList), newUser);
 
-                    // TODO: send initial room join message to all connected clients (in main hall?)
+                    // send initial room join message to all connected clients (in main hall?)
                     RoomChange roomChange = new RoomChange(newUser.getName(), "", "MainHall");
                     broadcastMessage(gson.toJson(roomChange), this.mainHall);
 
@@ -129,7 +141,10 @@ public class PoolServer{
                 i = i + 1;
             }
         }
+    }
 
+    public void removeFromDefaultIds(int idNumber) {
+        this.defaultIds.remove(idNumber);
     }
 
     public void broadcastMessageToAll(String jsonMessage) {
@@ -141,15 +156,22 @@ public class PoolServer{
     public void broadcastMessage(String jsonMessage, Room room) {
         HashSet<ClientMeta> connectedUsers = room.getConnectedUsers();
         for (ClientMeta user : connectedUsers) {
+//            System.out.printf("Sending message to %s\n", user.getName());
             sendMessage(jsonMessage, user);
         }
     }
 
     public void sendMessage(String jsonMessage, ClientMeta user) {
-        if (user.getSocketConnection() != null) {
-            user.getSocketConnection().getWriter().print(jsonMessage);
-            user.getSocketConnection().getWriter().println();
-            user.getSocketConnection().getWriter().flush();
+        if (user.getSocketConnection() != null && !user.getDisconnected()) {
+            try {
+                user.getSocketConnection().getBufferedWriter().write(jsonMessage);
+                user.getSocketConnection().getBufferedWriter().newLine();
+                user.getSocketConnection().getBufferedWriter().flush();
+            } catch (IOException e) {
+                System.out.printf("Exception when trying to buffer write to socket (user: %s)! Disconnecting socket\n", user.getName());
+                disconnectClientSocket(user);
+//                e.printStackTrace();
+            }
         }
     }
 
@@ -159,5 +181,19 @@ public class PoolServer{
 
     public HashSet<Room> getRooms() {
         return rooms;
+    }
+
+    public PoolHandler getPoolHandler() {
+        return poolHandler;
+    }
+
+    private void disconnectClientSocket(ClientMeta user) {
+        /*
+         Called when a TCP connection has been detected to have been interrupted (failure to write to buffer).
+         */
+        user.setDisconnected(true);
+        QuitCommand quitCommand = new QuitCommand(this, user);
+        quitCommand.execute();
+
     }
 }

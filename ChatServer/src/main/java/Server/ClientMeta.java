@@ -15,6 +15,7 @@ public class ClientMeta {
     private Room connectedRoom;
     private HashSet<Room> ownedRooms;
     private SocketConnection socketConnection;
+    private boolean disconnected = false;
 
     public ClientMeta() {
         this.name = "";
@@ -47,6 +48,14 @@ public class ClientMeta {
 
     public SocketConnection getSocketConnection() {
         return socketConnection;
+    }
+
+    public boolean getDisconnected() {
+        return disconnected;
+    }
+
+    public void setDisconnected(boolean disconnected) {
+        this.disconnected = disconnected;
     }
 
     public void setConnectedRoom(Room connectedRoom) {
