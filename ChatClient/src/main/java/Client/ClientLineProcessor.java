@@ -86,7 +86,7 @@ public class ClientLineProcessor {
             // pertaining to this client
             if (former.equals(roomId)) {
                 // did not change (should only be sent to the person trying to change and it failed)
-                return "The requested room is invalid or non existent";
+                return "The requested room is invalid or non existent\n";
             }
             else {
                 // update chat client's idea of the current room
@@ -95,7 +95,7 @@ public class ClientLineProcessor {
 
             // check if disconnecting
             if (roomId.equals("")) {
-                System.out.println("Disconnecting!");
+                System.out.println("Disconnecting!\n");
                 // disconnect!
                 this.socketConnection.close();
                 this.chatClient.setKeepAlive(false);
