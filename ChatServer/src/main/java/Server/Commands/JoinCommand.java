@@ -49,6 +49,11 @@ public class JoinCommand extends Command {
                 this.poolServer.sendMessage(gson.toJson(roomContents), this.user);
                 this.poolServer.sendMessage(gson.toJson(roomList), this.user);
             }
+
+            // check if room that we moved out of has empty owner and is now empty; if so, then we delete the room
+            if (this.currentRoom.getOwner().getName().equals("") && this.currentRoom.getConnectedUsers().size() == 0) {
+                this.poolServer.removeFromRooms(this.currentRoom);
+            }
         }
         else {
             // send RoomChange message to client (former = roomid)

@@ -25,13 +25,8 @@ public class IDChangeCommand extends Command{
     @Override
     public void execute() {
         if (checkValid()) {
-            // update stored name in pool server (clientmeta, owned rooms, and currently connected room's client list)
+            // update stored name in pool server (should automatically propagate to all uses of this clientmeta)
             this.user.setName(this.identity);
-
-//            for (Room room : this.user.getOwnedRooms()) {
-//                // TODO: not sure if this updates automatically or if i need to do it manually like this
-//                room.setOwner(this.user);
-//            }
 
             // notify all users (including this user) of new identity
             IdentityChange identityChange = new IdentityChange(this.former, this.identity);
