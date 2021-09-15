@@ -2,6 +2,7 @@ package Server;
 
 import Connection.SocketConnection;
 import Message.S2C.NewIdentity;
+import Message.S2C.RoomChange;
 import Message.S2C.RoomContents;
 import Message.S2C.RoomList;
 import com.google.gson.Gson;
@@ -13,6 +14,7 @@ import java.util.*;
 
 public class PoolServer{
     private boolean alive = false;
+    // TODO: make CL argument
     public static final int PORT = 4444;
     private PoolHandler poolHandler;
 
@@ -88,6 +90,8 @@ public class PoolServer{
                     sendMessage(gson.toJson(roomList), newUser);
 
                     // TODO: send initial room join message to all connected clients (in main hall?)
+                    RoomChange roomChange = new RoomChange(newUser.getName(), "", "MainHall");
+                    broadcastMessage(gson.toJson(roomChange), this.mainHall);
 
                 }
             }

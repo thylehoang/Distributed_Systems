@@ -2,9 +2,9 @@ package Message.C2S;
 
 public class Delete {
     private String type = "delete";
-    private String roomId;
+    private String roomid;
 
-    public Delete(String roomId){
-        this.roomId = roomId;
+    public Delete(String roomid){
+        this.roomid = roomid;
     }
 }

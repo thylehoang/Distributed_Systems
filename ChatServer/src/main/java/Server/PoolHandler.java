@@ -33,7 +33,6 @@ public class PoolHandler implements Runnable {
                                 socketConnection.getSocket().getPort());
                         continue;
                     }
-//
                     try {
                         if (socketConnection.getReader().ready()) {
                             System.out.printf("Reading from [%d] buffer\n", socketConnection.getSocket().getPort());

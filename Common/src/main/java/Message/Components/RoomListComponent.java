@@ -8,4 +8,12 @@ public class RoomListComponent {
         this.roomid = roomid;
         this.count = count;
     }
+
+    public int getCount() {
+        return count;
+    }
+
+    public String getRoomid() {
+        return roomid;
+    }
 }
