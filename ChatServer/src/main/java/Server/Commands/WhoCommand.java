@@ -6,6 +6,8 @@ import Server.PoolServer;
 import Server.Room;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+
 public class WhoCommand extends Command {
     private PoolServer poolServer;
     private ClientMeta user;
@@ -21,28 +23,35 @@ public class WhoCommand extends Command {
     @Override
     public void execute() {
         if (checkValid()) {
-            Room requestedRoom = null;
-            // get requested room
-            for (Room room : this.poolServer.getRooms()) {
-                if (room.getRoomId().equals(this.roomId)) {
-                    requestedRoom = room;
-                }
-            }
+            Room requestedRoom = getRequestedRoom();
 
-            if (requestedRoom != null) {
-                String owner = requestedRoom.getOwner().getName();
-                RoomContents roomContents = new RoomContents(this.roomId, owner, requestedRoom.getConnectedUserNames());
-                poolServer.sendMessage(gson.toJson(roomContents), user);
-            }
-            else {
-                // TODO could not find requested room
-            }
+            String owner = requestedRoom.getOwner().getName();
+            RoomContents roomContents = new RoomContents(this.roomId, owner, requestedRoom.getConnectedUserNames());
+            poolServer.sendMessage(gson.toJson(roomContents), user);
+        }
+        else {
+            // room not found; send a RoomContents message with no owner and no-one connected (impossible situation
+            // except for MainHall)
+            RoomContents roomContents = new RoomContents(this.roomId, "", new ArrayList<String>());
+            poolServer.sendMessage(gson.toJson(roomContents), user);
         }
     }
 
     @Override
     public boolean checkValid() {
-        return true;
+        // check if the room name matches any existing rooms
+        Room requestedRoom = getRequestedRoom();
+
+        // if name not found, then invalid!
+        return requestedRoom != null;
     }
 
+    public Room getRequestedRoom() {
+        for (Room room : this.poolServer.getRooms()) {
+            if (room.getRoomId().equals(this.roomId)) {
+                return room;
+            }
+        }
+        return null;
+    }
 }

@@ -60,7 +60,7 @@ public class ClientLineProcessor {
         String former = jsonObject.get("former").getAsString();
         String identity = jsonObject.get("identity").getAsString();
 
-        if (former.equals(this.chatClient.getRoomId())) {
+        if (former.equals(this.chatClient.getName())) {
             // pertaining to this client
             if (former.equals(identity)) {
                 // did not change
@@ -86,7 +86,7 @@ public class ClientLineProcessor {
             // pertaining to this client
             if (former.equals(roomId)) {
                 // did not change (should only be sent to the person trying to change and it failed)
-                return "The requested room is invalid or non existent";
+                return "The requested room is invalid or non existent\n";
             }
             else {
                 // update chat client's idea of the current room
@@ -135,6 +135,16 @@ public class ClientLineProcessor {
             }
         }
 
+        // check if no one connected; if so, then say it is empty
+        if (identitiesStr.equals("")) {
+            // check if invalid; blank owner and no one connected and not MainHall
+            if (owner.equals("") && !roomId.equals("MainHall")) {
+                return "The requested room is invalid or non-existent!\n";
+            }
+
+            return String.format("%s is empty\n", roomId);
+        }
+
         return String.format("%s contains %s\n", roomId, identitiesStr);
     }
 
@@ -145,6 +155,18 @@ public class ClientLineProcessor {
         List<RoomListComponent> roomListComponentList = Arrays.asList(roomListComponents);
 
         String output = "";
+
+        // check if invalid
+        if (roomListComponentList.size() == 1) {
+            // returned when trying to create a room that is invalid or already exists
+            if (roomListComponentList.get(0).getCount() == -1) {
+                return String.format("Room %s is invalid or already in use.\n", roomListComponentList.get(0).getRoomid());
+            }
+            // returned when trying to delete a room that is not yours or does not exist
+            else if (roomListComponentList.get(0).getCount() == -2) {
+                return String.format("Room %s is not yours or does not exist!\n", roomListComponentList.get(0).getRoomid());
+            }
+        }
 
         for (RoomListComponent roomListComponent : roomListComponentList) {
             output = output + String.format("%s: %d guests\n", roomListComponent.getRoomid(), roomListComponent.getCount());

@@ -26,7 +26,7 @@ public class JoinCommand extends Command {
     public void execute() {
         if (checkValid()) {
             // get requested room
-            Room requestedRoom = getRequestedRoom(this.newRoomId);
+            Room requestedRoom = getRequestedRoom();
 
             // change client room to requested room
             this.user.setConnectedRoom(requestedRoom);
@@ -67,10 +67,18 @@ public class JoinCommand extends Command {
     @Override
     public boolean checkValid() {
         // check if the room name matches any existing rooms
-        return getRequestedRoom(this.newRoomId) != null;
+        Room requestedRoom = getRequestedRoom();
+
+        // if name not found, then room does not exist so it is invalid!
+        if (requestedRoom == null) {
+            return false;
+        }
+
+        // check if the requested room is the same as existing room -- in which case, it is invalid
+        return !requestedRoom.equals(this.user.getConnectedRoom());
     }
 
-    public Room getRequestedRoom(String newRoomId) {
+    public Room getRequestedRoom() {
         for (Room room : this.poolServer.getRooms()) {
             if (room.getRoomId().equals(this.newRoomId)) {
                 return room;

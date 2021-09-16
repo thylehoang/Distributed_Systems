@@ -1,9 +1,12 @@
 package Server.Commands;
 
+import Message.S2C.RoomList;
 import Server.ClientMeta;
 import Server.PoolServer;
 import Server.Room;
 import com.google.gson.Gson;
+
+import java.util.HashMap;
 
 public class DeleteCommand extends Command {
     private PoolServer poolServer;
@@ -29,6 +32,18 @@ public class DeleteCommand extends Command {
 
             // delete the room
             this.poolServer.removeFromRooms(requestedRoom);
+
+            // send RoomList to client that deleted the room
+            RoomList roomList = new RoomList(this.poolServer.getRoomLists());
+            this.poolServer.sendMessage(gson.toJson(roomList), this.user);
+        }
+        else {
+            // send RoomList to client w/ failed room deletion id + -2 people (impossible!)
+            HashMap<String,Integer> errorRoomMap = new HashMap<>();
+            errorRoomMap.put(this.roomId, -2);
+
+            RoomList roomList = new RoomList(errorRoomMap);
+            this.poolServer.sendMessage(gson.toJson(roomList), this.user);
         }
     }
 

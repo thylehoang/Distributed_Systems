@@ -6,6 +6,8 @@ import Server.PoolServer;
 import Server.Room;
 import com.google.gson.Gson;
 
+import java.util.HashMap;
+
 public class CreateRoomCommand extends Command {
     private PoolServer poolServer;
     private ClientMeta user;
@@ -31,12 +33,36 @@ public class CreateRoomCommand extends Command {
             // send RoomList to client
             RoomList roomList = new RoomList(this.poolServer.getRoomLists());
             this.poolServer.sendMessage(gson.toJson(roomList), this.user);
+
         }
+        else {
+            // invalid! send a RoomList with only the attempted room (no MainHall)
+            // and client will see that there is no MainHall and treat as invalid
+            HashMap<String,Integer> errorRoomMap = new HashMap<>();
+            errorRoomMap.put(this.newRoomId, -1);
+
+            RoomList roomList = new RoomList(errorRoomMap);
+            this.poolServer.sendMessage(gson.toJson(roomList), this.user);
+
+        }
+
     }
 
     @Override
     public boolean checkValid() {
         // check if provided name is valid (starts with upper/lower case, only consists of a-zA-Z0-9, >=3 and <=32 in length
-        return this.newRoomId.matches("^[a-zA-Z][a-zA-Z0-9]{2,31}$");
+        if (!this.newRoomId.matches("^[a-zA-Z][a-zA-Z0-9]{2,31}$")) {
+            return false;
+        }
+
+        // check if name in use
+        for (Room room : poolServer.getRooms()) {
+            if (room.getRoomId().equals(this.newRoomId)) {
+                // already in use!
+                return false;
+            }
+        }
+
+        return true;
     }
 }

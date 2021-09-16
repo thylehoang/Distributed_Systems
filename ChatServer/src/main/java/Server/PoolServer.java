@@ -15,8 +15,6 @@ import java.util.*;
 
 public class PoolServer{
     private boolean alive = false;
-    // TODO: make CL argument
-//    public static final int PORT = 4444;
     private final int port;
     private final PoolHandler poolHandler;
 
