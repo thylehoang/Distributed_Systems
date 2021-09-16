@@ -39,7 +39,7 @@ public class ChatClient {
             chatClient.handleConnection();
         }
         else {
-            System.out.println("Please specify hostname!\n");
+            System.out.println("Please specify hostname!");
         }
     }
 

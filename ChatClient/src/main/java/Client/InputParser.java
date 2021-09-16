@@ -99,7 +99,7 @@ public class InputParser implements Runnable{
             } catch (IOException e) {
                 // connection likely lost to server. Trying to send another message won't work because the server socket
                 // is likely closed. Hence, we exit so that the user can restart the client and reconnect
-                System.out.println("Failed to send message to server! Connection likely lost. Aborting.\n");
+                System.out.println("Failed to send message to server! Connection likely lost. Aborting.");
 //                e.printStackTrace();
                 System.exit(0);
             }
