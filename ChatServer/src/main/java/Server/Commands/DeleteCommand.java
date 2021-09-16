@@ -7,6 +7,7 @@ import Server.Room;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class DeleteCommand extends Command {
     private PoolServer poolServer;
@@ -24,7 +25,9 @@ public class DeleteCommand extends Command {
     public void execute() {
         if (checkValid()) {
             Room requestedRoom = getRequestedRoom();
-            for (ClientMeta user : requestedRoom.getConnectedUsers()) {
+            // create a copy to avoid concurrent modification exceptions
+            HashSet<ClientMeta> usersToMove = new HashSet<ClientMeta>(requestedRoom.getConnectedUsers());
+            for (ClientMeta user : usersToMove) {
                 // pretend we received a RoomChange from each user -- call the JoinCommand on behalf of each user
                 JoinCommand joinCommand = new JoinCommand(this.poolServer, user, "MainHall");
                 joinCommand.execute();

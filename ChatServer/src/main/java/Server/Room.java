@@ -17,7 +17,7 @@ public class Room {
     public Room(String roomId, ClientMeta owner) {
         this.owner = owner;
         this.roomId = roomId;
-        this.connectedUsers = new HashSet<>();
+        this.connectedUsers = new HashSet<ClientMeta>();
     }
 
     /*
