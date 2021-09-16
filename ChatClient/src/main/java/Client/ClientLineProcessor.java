@@ -95,7 +95,7 @@ public class ClientLineProcessor {
 
             // check if disconnecting
             if (roomId.equals("")) {
-                System.out.println("Disconnecting!");
+                System.out.println("Disconnecting!\n");
                 // disconnect!
                 this.socketConnection.close();
                 this.chatClient.setKeepAlive(false);
