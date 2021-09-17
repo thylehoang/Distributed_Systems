@@ -152,7 +152,8 @@ public class PoolServer{
     }
 
     public void broadcastMessage(String jsonMessage, Room room) {
-        HashSet<ClientMeta> connectedUsers = room.getConnectedUsers();
+        // make a copy to avoid concurrent modification exception
+        HashSet<ClientMeta> connectedUsers = new HashSet<ClientMeta>(room.getConnectedUsers());
         for (ClientMeta user : connectedUsers) {
 //            System.out.printf("Sending message to %s\n", user.getName());
             sendMessage(jsonMessage, user);
